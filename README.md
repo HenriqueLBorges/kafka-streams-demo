@@ -82,7 +82,7 @@ On the kafka-publisher folder:
 
 Keep track of the logs:
 
-    - open wto new terminal windows
+    - open two new terminal windows
     - docker logs kakfa-publisher -f
     - docker logs kafka-streams-app -f
 
