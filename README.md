@@ -71,9 +71,7 @@ Create a new stack on the AWS CloudFormation service with the template on the aw
 
 Connect to the instance created by the AWS CloudFormation via SSH.
 
-On the kafka-publisher folder:
-
-    - Open a new terminal window
+    - Wait a few minutes while docker is building our images
     - docker run --network=host kafka-publisher
     - docker run --network=host kafka-streams-app
 
