@@ -71,13 +71,6 @@ Create a new stack on the AWS CloudFormation service with the template on the aw
 
 Connect to the instance created by the AWS CloudFormation via SSH.
 
-On the root folder:
-    
-    - Open a terminal window
-    - docker-compose up --build
-
-Keep the command above running.
-
 On the kafka-publisher folder:
 
     - Open a new terminal window
