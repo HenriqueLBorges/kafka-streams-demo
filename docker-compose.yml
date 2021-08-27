@@ -1,12 +1,5 @@
 version: '3'
 services:
-  kafka-streams-app:
-    container_name: kafka-streams-app
-    build: kafka-streams-app/
-    depends_on:
-      - kafka
-    environment:
-      BOOTSTRAP_SERVERS: kafka:29092
 
   zookeeper:
     container_name: zookeeper

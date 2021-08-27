@@ -67,6 +67,10 @@ Our Kafka publisher and Kafka Streams Application need a Kafka cluster and a Zoo
 ## How to run
 **You Don't need to set any ENV variable**
 
+Create a new stack on the AWS CloudFormation service with the template on the aws folder.
+
+Connect to the instance created by the AWS CloudFormation via SSH.
+
 On the root folder:
     
     - Open a terminal window
@@ -77,13 +81,7 @@ Keep the command above running.
 On the kafka-publisher folder:
 
     - Open a new terminal window
-    - docker build -t kafka-publisher:latest . --progress=plain --no-cache
     - docker run --network=host kafka-publisher
-
-Keep track of the logs:
-
-    - open two new terminal windows
-    - docker logs kakfa-publisher -f
-    - docker logs kafka-streams-app -f
+    - docker run --network=host kafka-streams-app
 
 Everytime you want to generate more data, you have to exec the last docker run command.
