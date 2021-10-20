@@ -1,78 +1,78 @@
-# Kafka-streams application demo
+## Kafka-streams demonstração
 
-I developed this demo with the intent to demonstrate some features of the Kafka streams library. Therefore, I divided this demo into three core parts: A Kafka publisher, a Kafka streams application, and Kafka itself, along with Zookeeper.
+Essa demontração foi desenvolvida com o intuíto de demonstrar algumas funcionalidades da biblioteca de Kafka Streams. Portanto, eu divi a demo em 3 partes: Um publicador, uma aplicação de Kafka Streams e o próprio Kafka em conjunto com o Zookeeper.
 
-## The demonstration
+### The demonstration
 
 <div style="text-align:center"><img src="./misc/images/demonstration-high-level.png" alt="demonstration high level"/></div>
 
-### Common definitions:
-    "Boleto Bancário", simply referred to as Boleto (English: Ticket) is a payment method in Brazil regulated by FEBRABAN, short for Brazilian Federation of Banks.
+#### Common definitions:
+    Um boleto bancário (ou simplesmente boleto ou, ainda, bloqueto) é um documento largamente utilizado no Brasil como instrumento de pagamento de um produto ou serviço prestado. Através do boleto, seu emissor pode receber do pagador o valor referente àquele pagamento. - Wikipedia
 
-The idea of this demonstration is to create a scenario where our first application receives a boleto to validate from a Kafka topic ("left-topic"), initiates some work, and forward this boleto to another application to complete the validation. The following application then replies with the boleto's validation on another Kafka topic ("right-topic"). Our first application consumes this other Kafka topic too.
+O objetivo da demonstração é criar um cenário onde a aplicação de Streams recebe um boleto para validar de um tópico kafka ("left-topic"), inicia um processo e encaminha esse boleto para uma outra aplicação para completar a validação. A aplicação seguinte processa a validação e retorna o resultado em um tópico Kafka distinto ("right-topic"). A aplicação de Streams mencionada anteriormente consome esse tópico também.
 
-There is an operational time window of 30 minutes to validate a boleto, and our first application is responsible for the validation response. So if it receives validation for a pending boleto in 30 minutes, we produce a result on another Kafka topic ("output-topic"), or in case of a validation timeout, we produce another result in the "output-topic" warning that the boleto couldn't be validated on time.
+Existe uma janela operacional de 30 minutos para validar um boleto e a aplicação streams é responsável por produzir a resposta. Então, quando a validação de um boleto é recebida dentro de 30 minutos, a aplicação de Streams produz um resultado em outro tópico Kafka ("output-topic"). Caso a segunda aplicação não produza a validação para a aplicação de Streams dentro de 30 minutos, a aplicação de Streams deve produzir um outro evento no tópico Kafka ("output-topic"), avisando que o boleto não pode ser validado a tempo.
 
-The application will make use of the Kafka Streams library to accomplish this workload. The Kafka streams application will create two different Kafka streams consuming from both Kafka topics mentioned above ("left-topic" and "right-topic")
+A aplicação de Streams fará uso da biblioteca oficial de Kafka Streams para implementar esse comportamento. A aplicação de Streams criará duas abstrações de streams (KStream) consumindo simultâneamente dois tópicos Kafka mencionandos anteriormente ("left-topic" e "right-topic").
 
-For the Kafka stream consuming from the "left-topic", the application will start a stateful process keeping all the boletos pending validation on a local store. This Kafka stream also has an internal timeout mechanism that removes all boletos with pending validations for more than 30 minutes. For each of these expired boletos, we send an expired event for the boleto on the "output-topic". When the other Kafka stream consuming the "right-topic" receives a validation, our application verifies if its corresponding boleto is still waiting for its validation. If that's the case, we send a validation event for the boleto to the "output-topic" and remove it from the local store. If the first Kafka stream expired the boleto before its validation, we send a late validation event to the "output-topic" when the validation eventually arrives.
+Para a stream consumindo do tópico Kafka "left-topic", a aplicação iniciará um processamento stateful mantendo todos os boletos com validação pendente em uma local store. A aplicação de streams possui um mecânismo interno de timeout que remove todos os boletos com validação pendente após 30 minutos. Para cada um dos boletos removidos, a aplicação de streams envia um evento correspondente avisando no tópico Kafka "output-topic". Quando a outra stream que consome do tópico Kafka "right-topic" recebe um novo evento (validação), nossa aplicação de streams verifica se o boleto correspondente ainda está aguardando validação da local store. Se esse for o caso, nós enviamos um evento de validação esse boleto no tópico Kafka "output-topic" e removemos o mesmo da local store. Se a aplicação de streams já removeu o boleto da local store, enviamos um evento de validação atrasada no tópico Kafka "output-topic".
 
-## Kafka Publisher
+### Kafka Publisher
 
 <div style="text-align:center"><img src="./misc/images/kafka-publisher.png" alt="kafka-publisher"/></div>
 
-To accomplish our objectives we need to be able to create fake data for boletos and it respectives validations. The Kafka publisher application is responsible for generate this data to the Kafka streams application.
+Para testar esse cenário precisamos ser capazes de gerar dados fake para boletos e suas respectivas validações. A aplicação Kafka Publisher é responsável por gerar esses dados e inserir os mesmo nos tópicos Kafka ("left-topic" e "right-topic").
 
-### ENV VARIABLES
+#### ENV VARIABLES
 
-    - BOOTSTRAP_SERVERS -> bootstrap servers is a comma-separated list of host and port pairs that are the addresses of the Kafka brokers in a "bootstrap" Kafka cluster that a Kafka client connects to initially to bootstrap itself.
-    - LEFT_TOPIC -> The topic name used to publish boletos
-    - RIGHT_TOPIC -> The topic name used to publish validations
-    - CLIENT_ID_CONFIG_BOLETO -> An id string to pass to the server when making requests. The purpose of this is to be able to track the source of requests beyond just ip/port by allowing a logical application name to be included in server-side request logging. Used for the boleto producer.
-    - CLIENT_ID_CONFIG_BOLETO_VALIDATION -> An id string to pass to the server when making requests. The purpose of this is to be able to track the source of requests beyond just ip/port by allowing a logical application name to be included in server-side request logging. Used for the validations producer.
+    - BOOTSTRAP_SERVERS -> Lista separada por vírgula contendo os hosts e as respectivas portas dos brokers kafka.
+    - LEFT_TOPIC -> Nome do tópico usado para publicar boletos
+    - RIGHT_TOPIC -> Nome do tópico usado para publicar validações
+    - CLIENT_ID_CONFIG_BOLETO -> Um ID repassado para o servidor enquanto requisições são feitas. O propósito desse ID é rastrear a origem para além de simplismente IP/Porta permitindo um nome de aplicação nos logs. Usado pelo producer de boletos.
+    - CLIENT_ID_CONFIG_BOLETO_VALIDATION -> Um ID repassado para o servidor enquanto requisições são feitas. O propósito desse ID é rastrear a origem para além de simplismente IP/Porta permitindo um nome de aplicação nos logs. Usado pelo producer de validações.
 
-## Kafka Streams Application
+### Kafka Streams Application
 
 <div style="text-align:center"><img src="./misc/images/kafka-streams.png" alt="kafka-streams"/></div>
 
-The Kafka Streams Application will be where we will implement all functionality described before. It will consume both topics and, within 30 minutes, produce a result on another Kafka topic.
+A aplicação de streams terá toda a funcionalidade descrita anteriormente. Ela consumirá ambos os tópicos Kafka ("left-topic" e "right-topic") e dentro de no máximo 30 minutos produzirá um resultado.
 
-### Kafka Streams Topology
+#### Kafka Streams Topology
 
 <div style="text-align:center"><img src="./misc/images/kafka-streams-topology.png" alt="kafka-streams-topology"/></div>
 
-Kafka Streams uses a programming paradigm called "dataflow programming" (DFP), a data-centric method of representing programs as a series of inputs, outputs, and processing stages. The stream processing logic in a Kafka Streams application is structured as a directed acyclic graph (DAG), where nodes (the rectangles in the diagram above) represent a processor. The edges (the lines connecting the processers) represent input and output streams (where data flows between them). Thus, a collection of processors forms a Processor Topology for the Kafka Streams Application.
+Kafka Streams utiliza um paradigma de programação denominado "dataflow programming" (DFP), um método centralizado em dados representando uma série de entradas, saídas e estágios de processamento. A lógica de processamento de fluxo de dados em uma aplicação de Kafka Streams é estruturada como um grafo aciclico (DAG), onde nós (os retângulos no diagrama acima) representam um processador/Processor. As conexões (linhas ligando os processadores/Processors) representam a entrada e saída de fluxos de dados. Portanto uma coleção de processadore/Processor foram uma topologia de processamento (Processor Topology) para uma aplicação de Kafka Streams.
 
-### ENV VARIABLES
+#### ENV VARIABLES
 
-    - BOOTSTRAP_SERVERS -> bootstrap servers is a comma-separated list of host and port pairs that are the addresses of the Kafka brokers in a "bootstrap" Kafka cluster that a Kafka client connects to initially to bootstrap itself.
-    - LEFT_TOPIC -> The topic name used to consume boletos (must be the same used in the Kafka Publisher)
-    - RIGHT_TOPIC -> The topic name used to consume validations (must be the same used in the Kafka Publisher)
-    - OUTPUT_TOPIC -> The topic name used to publish boleto validations results
-    - STORE_NAME -> The name used for the local store
-    - CLIENT_ID_CONFIG -> An id string to pass to the server when making requests. The purpose of this is to be able to track the source of requests beyond just ip/port by allowing a logical application name to be included in server-side request logging. Used for the Kafka Streams Application.
-    - APPLICATION_ID_CONFIG -> Must be unique within the Kafka cluster as it is used as a namespace for the default client-id prefix, the group-id for membership management, and the prefix for internal topics (that Kafka Streams creates internally).
-    - COMMIT_INTERVAL_MS_CONFIG -> How often StreamThread attempts to commit the position of processors and flush state stores
+    - BOOTSTRAP_SERVERS -> Lista separada por vírgula contendo os hosts e as respectivas portas dos brokers kafka.
+    - LEFT_TOPIC -> Nome do tópico usado para consumir boletos
+    - RIGHT_TOPIC -> Nome do tópico usado para consumir validações
+    - OUTPUT_TOPIC -> Nome do tópico usado para publicar resultados
+    - STORE_NAME -> Nome utilizado na store local
+    - CLIENT_ID_CONFIG -> Um ID repassado para o servidor enquanto requisições são feitas. O propósito desse ID é rastrear a origem para além de simplismente IP/Porta permitindo um nome de aplicação nos logs.
+    - APPLICATION_ID_CONFIG -> Deve ser único dentro de todo o cluster Kafka porque é utilizado como namespace para o padrão de prefixo de client-id, group-id para gerencimaneto de membros e prefixo para tópicos internos criados pela biblioteca de Kafka Streams.
+    - COMMIT_INTERVAL_MS_CONFIG -> Frequência em que a aplicação realiza commits da posição dos Processors.
 
-## Kafka and Zookeeper
+### Kafka and Zookeeper
 
 <div style="text-align:center"><img src="./misc/images/kafka-zookeeper.png" alt="kafka-zookeeper"/></div>
 
-Our Kafka publisher and Kafka Streams Application need a Kafka cluster and a Zookeeper to communicate.
+As aplicações de Kafka Publisher e Streams precisam de um cluster Kafka e um Zookeeper para poderem se comunidar. 
 
-## Pre-requisites
+### Pré-requisitos (já instalados na instância criada pelo Template CloudFormation)
     - Docker
     - Docker-compose
 
-## How to run
-**You Don't need to set any ENV variable**
+### Como rodar
+**Você não precisa configurar nenhuma variável de ambiente dado que as mesmas possuem valores padrão**
 
-Create a new stack on the AWS CloudFormation service with the template on the aws folder.
+Crie uma nova stack no serviço AWS CloudFormation com o template presente na pasta aws/ na raiz do repositório.
 
-Connect to the instance created by the AWS CloudFormation via SSH.
+Conecte na instância EC2 criada via AWS Systems Manager.
 
-    - Wait a few minutes while docker is building our images
+    - Aguarde alguns minutos enquanto o Docker faz build da aplicação kafka-streams-app e da aplicação kafka-publisher
     - docker run --network=host kafka-publisher
     - docker run --network=host kafka-streams-app
 
-Everytime you want to generate more data, you have to exec the last docker run command.
+Toda vez que você desejar gear mais dados, você precisa executar o kafka-publisher.
