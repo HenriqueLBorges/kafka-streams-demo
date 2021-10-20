@@ -8,7 +8,7 @@ import java.util.Map;
 public class BoletoDeserializer implements Deserializer <Boleto> {
 
     /**
-     * close
+     * Encerra
      *
      */
     @Override
@@ -16,7 +16,7 @@ public class BoletoDeserializer implements Deserializer <Boleto> {
     }
 
     /**
-     * configure
+     * Configura
      *
      */
     @Override
@@ -24,7 +24,7 @@ public class BoletoDeserializer implements Deserializer <Boleto> {
     }
 
     /**
-     * Deserialize the byte array into the Boleto object
+     * Desserializa o array de bytes em um objeto Boleto
      *
      * @param arg0
      * @param arg1

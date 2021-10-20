@@ -18,9 +18,9 @@ public class BoletoValidation {
     private Boolean expired;
 
     /**
-     * Create a Boleto Validation with every property null
+     * Cria uma validação de boleto com todas as propriedades como null
      *
-     * @return BoletoValidation - the boleto validation object
+     * @return BoletoValidation - Objeto de validação de boleto com propriedades null
      */
     public BoletoValidation() {
         this.boleto = null;
@@ -31,14 +31,14 @@ public class BoletoValidation {
     }
 
     /**
-     * Create a Boleto Validation
+     * Cria uma validação de boleto
      *
-     * @param Boleto - The boleto that was validated
-     * @param Long - The validation date timestamp
-     * @param String - The validation identification
-     * @param Boolean - The validation result
-     * @param Boolean - Expired status
-     * @return BoletoValidation - the boleto validation object
+     * @param Boleto - Boleto que foi validado
+     * @param Long - Timestamp da validação
+     * @param String - Identificador da validação
+     * @param Boolean - Resultado da validação
+     * @param Boolean - Status da expiração
+     * @return BoletoValidation - Objeto de validação de boleto
      */
     public BoletoValidation(Boleto boleto, Long validationDate, String validationID, Boolean valid, Boolean expired) {
         this.boleto = boleto;
@@ -49,72 +49,72 @@ public class BoletoValidation {
     }
 
     /**
-     * Get the original boleto from validation
+     * Retorna o boleto que foi validado
      *
-     * @return Boleto - The boleto that was validated
+     * @return Boleto - Boleto validado
      */
     public Boleto getBoleto() {
         return this.boleto;
     }
 
     /**
-     * Get the validation date
+     * Retorna a data de validação
      *
-     * @return Long - The validation date timestamp
+     * @return Long - Timestamp da data de validação
      */
     public Long getValidationDate() {
         return this.validationDate;
     }
 
     /**
-     * Get the validation identification
+     * Retorna o identificador da validação
      *
-     * @return String - The validation identification
+     * @return String - Identificador da validação
      */
     public String getValidationID() {
         return this.validationID;
     }
 
     /**
-     * Get the validation status
+     * Retorna o status da validação
      *
-     * @return Boolean - The validation result
+     * @return Boolean - Resultado da validação
      */
     public Boolean getValid() {
         return this.valid;
     }
 
     /**
-     * Set expired
+     * Seta a expiração
      *
-     * @param Boolean - The expired status
+     * @param Boolean - Status da expiração
      */
     public void setExpired(Boolean expired) {
         this.expired = expired;
     }
 
     /**
-     * Get the expired status
+     * Retorna o status da expiração
      *
-     * @return Boolean - The expired status
+     * @return Boolean - Status da expiração
      */
     public Boolean getExpired() {
         return this.expired;
     }
 
     /**
-     * Return the validation date formatted as DD/MM/YYYY hh:mm:ss.mmm
+     * Retorna a data de validação formatada como: DD/MM/YYYY hh:mm:ss.mmm
      *
-     * @return String - Received date formatted
+     * @return String - Data de validação formatada
      */
     public String getValidationDateFormatted() {
         return this.getDateFormatted(this.getValidationDate());
     }
 
     /**
-     * Return the received date formatted as DD/MM/YYYY hh:mm:ss.mmm
+     * Converte uma data para DD/MM/YYYY hh:mm:ss.mmm
      * @param Long - Timestamp in millis
-     * @return String - Received date formatted
+     * @return String - Data de validação formatada
      */
     private String getDateFormatted(Long milli) {
         Calendar calendar = Calendar.getInstance();
@@ -126,8 +126,8 @@ public class BoletoValidation {
     }
 
     /**
-     * Convert the object to String
-     * @return String - Object converted
+     * Converte o objeto para String
+     * @return String - Objeto convertido para String
      */
     public String toString() {
         if(this.getValidationDate() == null || this.getValidationID() == null || this.getValid() == null){

@@ -18,7 +18,7 @@ public class Main {
     private final static String CLIENT_ID_CONFIG_BOLETO_VALIDATION = System.getenv("BOLETO_VALIDATION_PRODUCER_CLIENT_ID_CONFIG") != null ? System.getenv("BOLETO_VALIDATION_PRODUCER_CLIENT_ID_CONFIG") : "kafka-streams-boleto-validation-producer";
 
     /**
-     * Kafka Publisher Application Main method.
+     * Método principal da aplicação
      *
      */
     public static void main(String[] args) {
@@ -46,12 +46,12 @@ public class Main {
     }
 
     /**
-     * Create fake boletos and insert them on topic
+     * Insere os boletos no tópico
      *
-     * @param start - Start key
-     * @param end - End key
-     * @param topic - Destination kafka topic
-     * @param boletos -  Boletos that will be inserted
+     * @param start - Primeira chave
+     * @param end - Última chave
+     * @param topic - Tópico de destino Kafka
+     * @param boletos -  Boletos que serão inseridos no tópico
      */
     private static void createBoletos(final int start, final int end, String topic, Boleto [] boletos) throws Exception {
         final Producer<Long, Boleto> producer = new KafkaProducer<>(generateBoletoProps());
@@ -84,12 +84,12 @@ public class Main {
     }
 
     /**
-     * Create fake validations and insert them on topic
+     * Insere as validações no tópico
      *
-     * @param start - Start key
-     * @param end - End key
-     * @param topic - Destination kafka topic
-     * @param boletoValidations -  Validations that will be inserted
+     * @param start - Primeira chave
+     * @param end - Última chave
+     * @param topic - Tópico de destino Kafka
+     * @param boletoValidations -  Validações que serão inseridas no tópico
      */
     private static void createValidations(final int start, final int end, String topic, BoletoValidation [] boletoValidations) throws Exception {
         final Producer<Long, BoletoValidation> producer = new KafkaProducer<>(generateBoletoValidationProps());
@@ -122,9 +122,9 @@ public class Main {
     }
 
     /**
-     * A Kafka Publisher Application needs a set of properties in order to work. This method returns the properties in order to our Kafka publisher to work publishing boletos.
+     * Uma aplicação plubicadora no kafka precisa de um conjunto de propriedades para conseguir se conectar. Esse método retorna esse conjunto de propriedades para publicador de boletos.
      *
-     * @return Properties - Kafka Application Properties
+     * @return Properties - Propriedades Kafka
      */
     private static Properties generateBoletoProps() {
         Properties props = new Properties();
@@ -140,9 +140,9 @@ public class Main {
     }
 
     /**
-     * A Kafka Publisher Application needs a set of properties in order to work. This method returns the properties in order to our Kafka publisher to work publishing validations.
+     * Uma aplicação plubicadora no kafka precisa de um conjunto de propriedades para conseguir se conectar. Esse método retorna esse conjunto de propriedades para publicador de validações.
      *
-     * @return Properties - Kafka Application Properties
+     * @return Properties - Propriedades Kafka
      */
     private static Properties generateBoletoValidationProps() {
         Properties props = new Properties();

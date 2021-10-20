@@ -19,9 +19,9 @@ public class ValidationBoletoTransformer implements Transformer<Long, BoletoVali
     private static String STORE_NAME = System.getenv("STORE_NAME") != null ? System.getenv("STORE_NAME") : "boletos-to-validade";
 
     /**
-     * Init the Transformer
+     * Inicia o Transformer
      *
-     * @param context - Processor context
+     * @param context - Contexto do processor
      */
     @Override
     public void init(ProcessorContext context) {
@@ -39,14 +39,14 @@ public class ValidationBoletoTransformer implements Transformer<Long, BoletoVali
         });
 
         this.context.schedule(
-                Duration.ofSeconds(1), PunctuationType.WALL_CLOCK_TIME, (ts) -> context.commit());
+                Duration.ofSeconds(1), PunctuationType.STREAM_TIME, (ts) -> context.commit());
     }
 
     /**
-     * Our transform is chained on the processor flow for validations that arrive, every validation received trigger this transform method. This method process the validation received for a boleto.
+     * Nosso Transformer é encadeado no fluxo de processamento de validações, cada validacão recebida no processor invoca esse método. Esse método processa cada validação recebida para um boleto.
      *
-     * @param key - Event key
-     * @param value - Validation received for a boleto
+     * @param key - Chave do evento
+     * @param value - Validação de um determinado boleto
      */
     @Override
     public KeyValue<Long, BoletoValidation> transform(Long key, BoletoValidation value) {
@@ -71,7 +71,7 @@ public class ValidationBoletoTransformer implements Transformer<Long, BoletoVali
     }
 
     /**
-     * This method verifies every boleto pending validation on local store
+     * Esse método verifica cada boleto com validacão pendente na store local
      *
      * @param timestamp - timestamp
      */
@@ -104,12 +104,12 @@ public class ValidationBoletoTransformer implements Transformer<Long, BoletoVali
             }
         } catch (Exception e){
             System.out.println("----------------------------------------------------------");
-            System.out.println("Exception on enforceTTL method =" + e);
+            System.out.println("Exception on method enforceTTL =" + e);
         }
     }
 
     /**
-     * Close the Transformer
+     * Encerra o Transformer
      *
      */
     @Override

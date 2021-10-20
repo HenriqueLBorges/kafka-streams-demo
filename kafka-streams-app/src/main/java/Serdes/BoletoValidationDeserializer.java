@@ -9,7 +9,7 @@ import java.util.Map;
 public class BoletoValidationDeserializer implements Deserializer <BoletoValidation> {
 
     /**
-     * close
+     * Encerra
      *
      */
     @Override
@@ -17,7 +17,7 @@ public class BoletoValidationDeserializer implements Deserializer <BoletoValidat
     }
 
     /**
-     * configure
+     * Configura
      *
      */
     @Override
@@ -25,7 +25,7 @@ public class BoletoValidationDeserializer implements Deserializer <BoletoValidat
     }
 
     /**
-     * Deserialize the byte array into the BoletoValidation object
+     * Desserializa o array de bytes em um objeto BoletoValidation
      *
      * @param arg0
      * @param arg1

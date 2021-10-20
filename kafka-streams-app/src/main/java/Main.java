@@ -1,3 +1,4 @@
+import java.time.Duration;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 import DataModels.Boleto;
@@ -12,15 +13,14 @@ import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.Topology;
-import org.apache.kafka.streams.kstream.KStream;
-import org.apache.kafka.streams.kstream.Consumed;
-import org.apache.kafka.streams.kstream.Produced;
+import org.apache.kafka.streams.kstream.*;
+import org.apache.kafka.streams.kstream.internals.SessionWindow;
 import org.apache.kafka.streams.state.KeyValueStore;
 import org.apache.kafka.streams.state.StoreBuilder;
 import org.apache.kafka.streams.state.Stores;
 
 public class Main {
-    private final static String BOOTSTRAP_SERVERS = System.getenv("BOOTSTRAP_SERVERS") != null ? System.getenv("BOOTSTRAP_SERVERS") : "localhost:9092";
+    private final static String BOOTSTRAP_SERVERS = System.getenv("BOOTSTRAP_SERVERS") != null ? System.getenv("BOOTSTRAP_SERVERS") : "localhost:9093";
     private final static String LEFT_TOPIC = System.getenv("LEFT_TOPIC") != null ? System.getenv("LEFT_TOPIC") : "left-topic";
     private final static String RIGHT_TOPIC = System.getenv("RIGHT_TOPIC") != null ? System.getenv("RIGHT_TOPIC") : "right-topic";
     private final static String OUTPUT_TOPIC = System.getenv("OUTPUT_TOPIC") != null ? System.getenv("OUTPUT_TOPIC") : "output-topic";
@@ -36,12 +36,12 @@ public class Main {
                     new BoletoSerde());
 
     /**
-     * Kafka Streams Application Main method.
+     * Método principal da aplicação de Kafka Streams.
      *
      */
     public static void main(final String[] args) {
         try {
-            System.out.println("Kafka Streams Application");
+
             KafkaStreams streams = new KafkaStreams(getTopology(), getStreamsConfiguration());
 
             streams.setUncaughtExceptionHandler((Thread thread, Throwable throwable) -> {
@@ -55,7 +55,7 @@ public class Main {
             streams.cleanUp();
             streams.start();
 
-            // Add shutdown hook to respond to SIGTERM and gracefully close Kafka Streams
+            // Encerra a aplicação
             Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
         } catch (Exception e) {
             System.out.println(e);
@@ -64,9 +64,9 @@ public class Main {
     }
 
     /**
-     * A Kafka Streams Application needs a set of properties in order to work. This method returns the properties in order to our Kafka Streams to work.
+     * Um aplicação de Kafka Streams precisa de um conjunto de propriedades para funcionar. Esse método retorna essas propriedades.
      *
-     * @return Properties - Kafka Streams Properties
+     * @return Properties - Propriedades Kafka Streams
      */
     public static Properties getStreamsConfiguration() {
         Properties props = new Properties();
@@ -84,49 +84,73 @@ public class Main {
     }
 
     /**
-     * A collection of processors forms a Processor Topology, which is often referred to as simply the topology. This method returns the topology for the stream application.
+     * Uma coleção de Processor ligados entre si forma uma topologia de processamento (ProcessorTopology). Esse método retorna a topologia para a aplicação de Streams.
      *
      * @return      Kafka Streams Application Topology
      */
     public static Topology getTopology() {
         StreamsBuilder builder = new StreamsBuilder();
 
-        // To support stateful operations, we need a way of storing and retrieving the remembered data, or state, required by each stateful operator in our application
+        // Operacões que guardam estado (Stateful) necessitam de uma forma para guardar e recuperar dados, ou estado. Para isso utilizaremos uma state store na memória.
         builder.addStateStore(storeBuilder);
 
-        // Declaring our Kafka streams- An Abstraction for modeling data
+        // Declarando nossos objetos de KStream (uma abstração de stream para os dados provenientes dos tópicos Kafka).
 
-        // The left stream receives boletos for validation
+        // A stream da esquerda recebe os boletos para validação
         final KStream<Long, Boleto> streams1 =
                 builder.stream(LEFT_TOPIC, Consumed.with(Serdes.Long(), new BoletoSerde()));
 
-        // The right stream receives validations for boletos
+        // A stream da direita rebe as validações de boletos
         final KStream<Long, BoletoValidation> streams2 =
                 builder.stream(RIGHT_TOPIC, Consumed.with(Serdes.Long(), new BoletoValidationSerde()));
 
+
+        /*streams1.leftJoin(streams2,
+                (leftValue, rightValue) -> "left =" + leftValue + ", right =" + rightValue,
+                JoinWindows.of(Duration.ofSeconds(5)),
+                Joined.with(
+                    Serdes.Long(),
+                    new BoletoSerde(),
+                    new BoletoValidationSerde()
+                ),
+                streams3
+        );
+
+        // Java 8+ example, using lambda expressions
+        KStream<Long, String> joined = streams1.join(streams2,
+                (leftValue, rightValue) -> "left=" + leftValue + ", right=" + rightValue, // ValueJoiner
+                JoinWindows.of(Duration.ofMinutes(2)),
+                Joined.with(
+                        Serdes.Long(), // key
+                        Serdes.String(), // left value
+                        Serdes.String()) // right value
+        );*/
+
+
+
         // We use the transform operator here to combinate the Kafka streams DLS (Domain Specific Language) methods with processor API (low level control of the streams)
 
-        // Send every boleto to the first transformer where it will be saved and processed
+        // Envia cada boleto recebido na stream para o primeiro Transformer, onde o boleto será armazenado e processado.
         streams1.transform(BoletoReceivedTransformer::new, STORE_NAME);
 
-        // Send every validation to the second transform where it will be processed and copy the result
+        // Envia cada validação para o segundo Transformer, onde a validação será processada.
+        // Copia a stream
         final KStream<Long, BoletoValidation> streams3 = streams2.transform(ValidationBoletoTransformer::new, STORE_NAME);
 
-        // The original stream will be sent to the output topic where the results can be consumed by other applications
+        // A stream original será enviada para o tópico de saída onde os resultados serão consumidos por outras aplicações
         streams2.to(OUTPUT_TOPIC, Produced.with(Serdes.Long(), new BoletoValidationSerde()));
 
-        // The copy stream will be used to demonstrate what other applications consuming the output topic will receive
-        // The for each operator here is only used to demonstrate what events we are receiving in our output topic
+        // A cópia da stream será usada para demonstrar o que outras aplicações consumiriam do tópico de saída.
         streams3.foreach((key, value) -> {
             System.out.println("----------------------------------------------------------");
 
             if (value != null) {
-                // Verifies which type of result we received on the output topic
-                if (value.getExpired() && value.getValidationDate() == null) { // Expired boletos without validations
+                // Verifica o tipo de resultado recebido no tópico de saída
+                if (value.getExpired() && value.getValidationDate() == null) { // Boletos expirados
                     System.out.println("OUTPUT TOPIC - Received a new event - Boleto: " + key + " - expired - " + value);
-                } else if (value.getExpired()) { // Late validations for boletos that were already expired
+                } else if (value.getExpired()) { // Validações atrasadas para boletos já expirados
                     System.out.println("OUTPUT TOPIC - Received a new event - Boleto: " + key + " - late validation arrived - " + value);
-                } else { // Boletos that were not expired and their corresponding validations
+                } else { // Boletos que receberam a valdiação a tempo
                     System.out.println("OUTPUT TOPIC - Received a new event - Boleto: " + key + " - " + value);
                 }
             } else {

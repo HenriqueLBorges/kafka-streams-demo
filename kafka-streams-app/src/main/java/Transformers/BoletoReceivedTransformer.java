@@ -12,9 +12,9 @@ public class BoletoReceivedTransformer implements Transformer<Long, Boleto, KeyV
     private static String STORE_NAME = System.getenv("STORE_NAME") != null ? System.getenv("STORE_NAME") : "boletos-to-validade";
 
     /**
-     * Init the Transformer
+     * Inicia o Transformer
      *
-     * @param context - Processor context
+     * @param context - Contexto do processor
      */
     @Override
     public void init(ProcessorContext context) {
@@ -26,10 +26,10 @@ public class BoletoReceivedTransformer implements Transformer<Long, Boleto, KeyV
     }
 
     /**
-     * Our transform is chained on the processor flow for validations that arrive, every boleto received trigger this transform method. This method inserts every boleto on local store.
+     * Nosso Transformer é encadeado no fluxo de processamento de boletos, cada boleto recebido invoca esse método. Esse método insere cada boleto na store local.
      *
-     * @param key - Event key
-     * @param value - Boleto received for validate
+     * @param key - Chave do evento
+     * @param value - Boleto recebido
      */
     @Override
     public KeyValue<Long, Boleto> transform(Long key, Boleto value) {
@@ -45,7 +45,7 @@ public class BoletoReceivedTransformer implements Transformer<Long, Boleto, KeyV
     }
 
     /**
-     * Close the Transformer
+     * Encerra o Transformer
      *
      */
     @Override

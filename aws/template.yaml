@@ -37,6 +37,21 @@ Parameters:
   LatestAmiId:
     Type:  'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
     Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
+  
+  # Parameters for the 'harness' VPC to host this demo.  All defaults are fine for our purposes.
+  VpcCidr:
+    Description: Please enter the IP range (CIDR notation) for this VPC
+    Type: String
+    Default: 10.192.0.0/16
+  PublicSubnetCidr:
+    Description: Please enter the IP range (CIDR notation) for the public subnet in the first Availability Zone
+    Type: String
+    Default: 10.192.10.0/24
+  PrivateSubnetWithNatCidr:
+    Description: Please enter the IP range (CIDR notation) for the private subnet in the first Availability Zone
+    Type: String
+    Default: 10.192.20.0/24
+
 Resources:
   EC2Instance:
     Type: AWS::EC2::Instance
@@ -84,7 +99,7 @@ Resources:
               cd kafka-streams-app
             - |
               docker build -t kafka-streams-app:latest . --progress=plain --no-cache
-
+      
 
               
   InstanceSecurityGroup:

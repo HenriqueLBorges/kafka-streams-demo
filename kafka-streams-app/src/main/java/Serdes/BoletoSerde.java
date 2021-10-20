@@ -6,7 +6,7 @@ import org.apache.kafka.common.serialization.Serdes;
 public class BoletoSerde extends Serdes.WrapperSerde<Boleto> {
 
     /**
-     * Create a BoletoSerde
+     * Cria um BoletoSerde
      *
      */
     public BoletoSerde() {

@@ -10,7 +10,7 @@ public class BoletoSerializer implements Serializer <Boleto> {
     private ObjectMapper mapper = new ObjectMapper();
 
     /**
-     * configure
+     * Configura
      *
      */
     @Override
@@ -19,7 +19,7 @@ public class BoletoSerializer implements Serializer <Boleto> {
     }
 
     /**
-     * Serialize the BoletoValidation object
+     * Serializa o objeto de Boleto em um array de bytes
      *
      * @param arg0
      * @param arg1
@@ -37,7 +37,7 @@ public class BoletoSerializer implements Serializer <Boleto> {
     }
 
     /**
-     * close
+     * Encerra
      *
      */
     @Override

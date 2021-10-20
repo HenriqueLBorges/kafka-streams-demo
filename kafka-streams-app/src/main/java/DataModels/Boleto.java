@@ -16,9 +16,9 @@ public class Boleto {
     private Long receivedDate;
 
     /**
-     * Create a Boleto with every property null
+     * Cria um Boleto com todas as propriedades como null
      *
-     * @return Boleto - the boleto object
+     * @return Boleto - Objeto de Boleto com propriedades null
      */
     public Boleto() {
         this.total = null;
@@ -28,13 +28,13 @@ public class Boleto {
     }
 
     /**
-     * Create a Boleto
+     * Cria um boleto
      *
-     * @param total - total value of the boleto
-     * @param bank - The bank that emitted the boleto
-     * @param dueDate - due date of the boleto
-     * @param receivedDate - received date of the boleto
-     * @return Boleto - the boleto object
+     * @param total - Valor total do boleto
+     * @param bank - Banco que emitiu o boleto
+     * @param dueDate - Data de vencimento do boleto
+     * @param receivedDate - Data de recebimento do boleto
+     * @return Boleto - Objeto de boleto
      */
     public Boleto(Double total, String bank, Long dueDate, Long receivedDate) {
         this.total = total;
@@ -44,63 +44,63 @@ public class Boleto {
     }
 
     /**
-     * Return the total value of the boleto
+     * Retorna o valor total do boleto
      *
-     * @return Double - total value of the boleto
+     * @return Double - Valor total do boleto
      */
     public Double getTotal() {
         return this.total;
     }
 
     /**
-     * Return the name of the bank that emitted the boleto
+     * Retorna o nome do banco que emitiu o boleto
      *
-     * @return String - Name of the bank
+     * @return String - Nome do banco
      */
     public String getBank() {
         return this.bank;
     }
 
     /**
-     * Return the due date timestamp
+     * Retorna a data de vencimento do boleto
      *
-     * @return Long - Due date timestamp
+     * @return Long - Timestamp da Data de vencimento do boleto
      */
     public Long getDueDate() {
         return this.dueDate;
     }
 
     /**
-     * Return the received date timestamp
+     * Retorna a data de recebimento do boleto
      *
-     * @return Long - Received date timestamp
+     * @return Long - Timestamp da Data de recebimento do boleto
      */
     public Long getReceivedDate() {
         return this.receivedDate;
     }
 
     /**
-     * Return the due date formatted as DD/MM/YYYY hh:mm:ss.mmm
+     * Retorna a data de vencimento formatada como: DD/MM/YYYY hh:mm:ss.mmm
      *
-     * @return String - Due date formatted
+     * @return String - Data de vencimento formatada
      */
     public String getDueDateFormatted() {
         return this.getDateFormatted(this.getDueDate());
     }
 
     /**
-     * Return the received date formatted as DD/MM/YYYY hh:mm:ss.mmm
+     * Retorna a data de recebimento formatada como: DD/MM/YYYY hh:mm:ss.mmm
      *
-     * @return String - Received date formatted
+     * @return String - Data de recebimento formatada
      */
     public String getReceivedDateFormatted() {
         return this.getDateFormatted(this.getReceivedDate());
     }
 
     /**
-     * Return the received date formatted as DD/MM/YYYY hh:mm:ss.mmm
-     * @param milli - Timestamp in millis
-     * @return String - Received date formatted
+     * Converte uma data para DD/MM/YYYY hh:mm:ss.mmm
+     * @param Long - Timestamp in millis
+     * @return String - Data de validação formatada
      */
     private String getDateFormatted(Long milli) {
         Calendar calendar = Calendar.getInstance();
@@ -112,8 +112,8 @@ public class Boleto {
     }
 
     /**
-     * Convert the object to String
-     * @return String - Object converted
+     * Converte o objeto para String
+     * @return String - Objeto convertido para String
      */
     public String toString() {
         return "Bank: " + this.getBank() + "\nTotal: " + this.getTotal() + "\nDue date: " + this.getDueDateFormatted() + "\nReceived date: " + this.getReceivedDateFormatted();

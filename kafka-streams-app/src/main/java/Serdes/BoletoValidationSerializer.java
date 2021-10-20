@@ -9,7 +9,7 @@ import java.util.Map;
 public class BoletoValidationSerializer implements Serializer <BoletoValidation> {
 
     /**
-     * configure
+     * Confira
      *
      */
     @Override
@@ -17,7 +17,7 @@ public class BoletoValidationSerializer implements Serializer <BoletoValidation>
     }
 
     /**
-     * Serialize the BoletoValidation object
+     * Serializa um objeto BoletoValidation em um array de bytes
      *
      * @param arg0
      * @param arg1
@@ -35,7 +35,7 @@ public class BoletoValidationSerializer implements Serializer <BoletoValidation>
     }
 
     /**
-     * close
+     * Encerra
      *
      */
     @Override
